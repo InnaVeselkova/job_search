@@ -1,9 +1,9 @@
-from src.api_hh import VacancyAPI
-from src.file_handler import VacancyFileHandler
+from src.api_hh import HHVacanciesAPI
 from src.vacancy import Vacancy
+from src.parsers import parse_vacancies
 
 
-def user_interaction(api: VacancyAPI, storage: VacancyFileHandler):
+def user_interaction():
     print("Добро пожаловать!")
 
     search_query = input("Введите поисковый запрос: ")
@@ -13,14 +13,13 @@ def user_interaction(api: VacancyAPI, storage: VacancyFileHandler):
         print("Некорректный ввод для N, устанавливаем N=5.")
         top_n = 5
 
-    filter_words_input = input("Введите ключевые слова для фильтрации (через пробел): ")
-    filter_words = filter_words_input.lower().split()
+    filter_words = input("Введите ключевые слова для фильтрации вакансий: ").split()
 
-    salary_range_input = input("Введите диапазон зарплат (например, 100000-150000 или оставить пустым): ")
+    salary_range= input("Введите диапазон зарплат (например, 100000-150000 или оставить пустым): ")
     salary_min, salary_max = None, None
-    if salary_range_input.strip():
+    if salary_range.strip():
         try:
-            parts = salary_range_input.replace(' ', '').split('-')
+            parts = salary_range.replace(' ', '').split('-')
             if len(parts) == 2:
                 salary_min = int(parts[0])
                 salary_max = int(parts[1])
@@ -28,6 +27,7 @@ def user_interaction(api: VacancyAPI, storage: VacancyFileHandler):
             print("Некорректный формат диапазона. Игнорируем фильтр по зарплате.")
 
     # Получение вакансий из API по поисковому запросу
+    api = HHVacanciesAPI()
     vacancies_data = api.get_vacancies(search_query)
 
     # Фильтрация по ключевым словам в описании
@@ -39,31 +39,15 @@ def user_interaction(api: VacancyAPI, storage: VacancyFileHandler):
     else:
         filtered = vacancies_data
 
-    # Создаем объекты Vacancy для сортировки по зарплате
-    vacancies_objs = []
-    for v in filtered:
-        salary = v.get('salary')
-        vacancy_obj = Vacancy(
-            name=v.get('name', 'Без названия'),
-            url=v.get('alternate_url', ''),
-            salary=salary,
-            description=v.get('description', ''),
-            requirements=v.get('requirements', '')
-        )
-        vacancies_objs.append(vacancy_obj)
+    vacancies = parse_vacancies(filtered)
 
-    # Фильтр по диапазону зарплат
     if salary_min is not None and salary_max is not None:
-        def salary_filter(v: Vacancy):
-            val = v._get_salary_value()
-            return salary_min <= val <= salary_max
-        vacancies_objs = list(filter(salary_filter, vacancies_objs))
+        v: Vacancy
+        vacancies = list(filter(lambda v: salary_min <= v._get_salary_value() <= salary_max, vacancies))
 
-    # Сортировка по зарплате
-    sorted_vacancies = sorted(vacancies_objs, reverse=True)
+    # Сортировка по зарплате (по убыванию)
+    top_vacancies = sorted(vacancies, key=lambda v: v._get_salary_value(), reverse=True)[:top_n]
+    return top_vacancies
 
-    # Вывод топ N вакансий
-    for v in sorted_vacancies[:top_n]:
-        print(f"Вакансия: {v.name}")
-        print(f"Зарплата: {v.salary}")
-        print(f"Ссылка: {v.url}")
+if __name__ == "__main__":
+    user_interaction()
