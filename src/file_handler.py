@@ -25,7 +25,6 @@ class JSONFileHandler(FileHandler):
         try:
             with open(self.__filename, 'r', encoding='utf-8') as f:
                 self._data = json.load(f)
-                # Обеспечиваем уникальность
                 self._remove_duplicates()
         except FileNotFoundError:
             self._data = []
@@ -63,6 +62,5 @@ class JSONFileHandler(FileHandler):
         return list(filter(filter_func, self._data))
 
     def delete_data(self, criteria):
-        # criteria — функция фильтрации для удаления
         self._data = list(filter(lambda v: not criteria(v), self._data))
         self._save()
