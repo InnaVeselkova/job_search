@@ -28,6 +28,7 @@ class HHVacancyAPI(VacancyAPI):
         else:
             raise ConnectionError(f"Не удалось подключиться к API: статус {response.status_code}")
 
+
     def connect(self):
         """Реализуем абстрактный метод."""
         self.__connect()
@@ -44,8 +45,7 @@ class HHVacancyAPI(VacancyAPI):
         page = 0
         while True:
             try:
-                # Перед каждым запросом делаем подключение
-                self.__connect()
+                #self.__connect()
 
                 params['page'] = page
                 response = requests.get(self.__base_url, params=params)
@@ -71,7 +71,7 @@ class HHVacancyAPI(VacancyAPI):
                 print("Повтор через несколько секунд...")
                 time.sleep(5)
                 continue
-            return vacancies
+        return vacancies
 
 
 if __name__ == "__main__":

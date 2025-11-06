@@ -64,3 +64,7 @@ class JSONFileHandler(FileHandler):
     def delete_data(self, criteria):
         self._data = list(filter(lambda v: not criteria(v), self._data))
         self._save()
+
+
+class VacancyFileHandler:
+    pass
