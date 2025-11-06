@@ -1,81 +1,79 @@
-from abc import ABC, abstractmethod
 import requests
+from abc import ABC, abstractmethod
 import time
 
 
-class VacancyAPI(ABC):
+class VacanciesAPI(ABC):
     @abstractmethod
-    def connect(self):
-        """Подключение к API."""
+    def _connect(self):
+        """Приватный метод проверки соединения с API."""
         pass
 
     @abstractmethod
-    def get_vacancies(self, query: str, params: dict = None):
-        """Получение списка вакансий из API."""
+    def get_vacancies(self, keyword: str):
+        """Получить список вакансий по ключевому слову."""
         pass
 
 
-class HHVacancyAPI(VacancyAPI):
+class HHVacanciesAPI(VacanciesAPI):
     def __init__(self):
         self.__base_url = 'https://api.hh.ru/vacancies'
-        self.__connect()
+        self.__headers = {'User-Agent': 'MyVacancyApp'}
+        self._connect()
 
-    def __connect(self):
-        """Приватный метод подключения к API - проверка базового URL."""
+    def _connect(self):
         response = requests.get(self.__base_url)
         if response.status_code == 200:
-            print("Подключение успешно.")
+            print("Подключение успешно к hh.ru")
         else:
-            raise ConnectionError(f"Не удалось подключиться к API: статус {response.status_code}")
+            raise ConnectionError(f"Ошибка подключения: {response.status_code}")
 
-
-    def connect(self):
-        """Реализуем абстрактный метод."""
-        self.__connect()
-
-    def get_vacancies(self, keyword: str, per_page: int = 20):
-        """Получает вакансии по ключевому слову и возвращает список словарей из ключа 'items'."""
-
+    def get_vacancies(self, keyword: str):
         params = {
             'text': keyword,
-            'per_page': per_page
+            'per_page': 100,
+            'page': 0
         }
+        all_vacancies = []
 
-        vacancies = []
-        page = 0
         while True:
-            try:
-                #self.__connect()
+            self._connect()
 
-                params['page'] = page
-                response = requests.get(self.__base_url, params=params)
+            response = requests.get(self.__base_url, headers=self.__headers, params=params)
+            if response.status_code != 200:
+                print(f"Ошибка API: {response.status_code}")
+                break
 
-                if response.status_code != 200:
-                    print(f"Ошибка API: {response.status_code}")
-                    break
+            data = response.json()
 
-                data = response.json()
+            items = data.get('items', [])
+            all_vacancies.extend(items)
 
-                # Собираем вакансии из ключа 'items'
-                page_items = data.get('items', [])
-                vacancies.extend(page_items)
+            # Проверяем наличие следующей страницы
+            pages = data.get('pages', 0)
+            current_page = data.get('page', 0)
+            if current_page >= pages - 1:
+                break
 
-                # Проверяем наличие следующей страницы
-                total_pages = data.get('pages', 0)
-                if page >= total_pages - 1:
-                    break
-                page += 1
-                time.sleep(1)
-            except requests.RequestException as e:
-                print(f"Ошибка соединения: {e}")
-                print("Повтор через несколько секунд...")
-                time.sleep(5)
-                continue
-        return vacancies
+            params['page'] += 1
+            time.sleep(1)
+        return all_vacancies
 
 
 if __name__ == "__main__":
+    api = HHVacanciesAPI()
+    keyword = "python разработчик"
+    vacancies = api.get_vacancies(keyword)
+    vacancies_ = []
+    for v in vacancies:
+        if v.get('salary') is not None:
+            vacancies_.append(v)
 
-    api = HHVacancyAPI()
-    vacancies = api.get_vacancies("Python разработчик")
-    print(vacancies)
+    print(f"Найдено {len(vacancies_)} вакансий с указанием зарплаты по запросу '{keyword}':")
+    for v in vacancies_[:5]:  # показываем первые 5
+        name = v.get('name')
+        url = v.get('alternate_url')
+        salary = v.get('salary')
+        print(f"Вакансия: {name}")
+        print(f"Ссылка: {url}")
+        print(f"Зарплата: {salary}")

@@ -1,16 +1,18 @@
-class Vacancy:
-    __slots__ = ['name', 'url', 'salary', 'description']
+from src.api_hh import HHVacanciesAPI
 
-    def __init__(self, name, url, salary, description):
-        self._validate_name(name)
-        self._validate_url(url)
+
+class Vacancy:
+    __slots__ = ['name', 'url', 'salary', 'description', 'requirements']
+
+    def __init__(self, name, url, salary, description, requirements=''):
+
         self._validate_salary(salary)
-        self._validate_description(description)
 
         self.name = name
         self.url = url
         self.salary = salary
         self.description = description
+        self.requirements = requirements
 
     # Магические методы сравнения по зарплате
     def __lt__(self, other):
@@ -45,26 +47,17 @@ class Vacancy:
             return self.salary
         return 0
 
-    # Приватные методы валидации
-    def _validate_name(self, name):
-        if not isinstance(name, str) or not name:
-            raise ValueError("Неверный формат названия вакансии.")
-
-    def _validate_url(self, url):
-        if not isinstance(url, str) or not url.startswith('http'):
-            raise ValueError("Некорректная ссылка на вакансию.")
-
     def _validate_salary(self, salary):
-        if not (isinstance(salary, (dict, str, int, float))):
+        if salary is None:
+            self.salary = 'Зарплата не указана'
+        elif not isinstance(salary, (dict, str, int, float)):
             raise ValueError("Неверный формат зарплаты.")
-
-    def _validate_description(self, description):
-        if not isinstance(description, str):
-            raise ValueError("Описание должно быть строкой.")
+        else:
+            self.salary = salary
 
 
 def parse_vacancies(vac_dict):
-    """Функция для преобразования списка словарей в список объектов Vacancy"""
+    """Функция для преобразования списка вакансий в список объектов Vacancy"""
     vacancies = []
     for v in vac_dict:
         name = v.get('name', 'Без названия')
@@ -75,3 +68,16 @@ def parse_vacancies(vac_dict):
         vacancy_obj = Vacancy(name, url, salary, description, requirements)
         vacancies.append(vacancy_obj)
     return vacancies
+
+
+if __name__ == "__main__":
+    api = HHVacanciesAPI()
+    keyword = "python разработчик"
+    vacs_dicts = api.get_vacancies(keyword)
+    vacancies = parse_vacancies(vacs_dicts)
+    print(f"Найдено {len(vacancies)} вакансий по запросу '{keyword}':")
+    sorted_vacancies = sorted(vacancies, reverse=True, key=lambda v: v._get_salary_value())
+    for v in sorted_vacancies[:5]:
+        print(f"Вакансия: {v.name}")
+        print(f"Ссылка: {v.url}")
+        print(f"Зарплата: {v.salary}")
