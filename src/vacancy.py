@@ -1,4 +1,5 @@
 from src.api_hh import HHVacanciesAPI
+from src.parsers import parse_vacancies
 
 
 class Vacancy:
@@ -14,6 +15,16 @@ class Vacancy:
         self.description = description
         self.requirements = requirements
 
+    def __str__(self):
+        return (
+            f"Вакансия: {self.name}\n"
+            f"Зарплата: {self._get_salary_value()}\n"
+            f"Ссылка: {self.url}\n"
+            f"Описание: {self.description}\n"
+            f"Требования: {self.requirements}\n"
+            "------------------------"
+        )
+
     # Магические методы сравнения по зарплате
     def __lt__(self, other):
         return self._get_salary_value() < other._get_salary_value()
@@ -25,7 +36,7 @@ class Vacancy:
         vacancies = []
         for v in vac_dicts:
             name = v.get('name', 'Без названия')
-            url = v.get('alternate_url') or v.get('url', '')
+            url = v.get('url', '')
             salary = v.get('salary')
             description = v.get('snippet', {}).get('responsibility', '')
             requirements = v.get('snippet', {}).get('requirement', '')
@@ -54,20 +65,6 @@ class Vacancy:
             raise ValueError("Неверный формат зарплаты.")
         else:
             self.salary = salary
-
-
-def parse_vacancies(vac_dict):
-    """Функция для преобразования списка вакансий в список объектов Vacancy"""
-    vacancies = []
-    for v in vac_dict:
-        name = v.get('name', 'Без названия')
-        url = v.get('alternate_url') or v.get('url', '')
-        salary = v.get('salary')
-        description = v.get('snippet', {}).get('responsibility', '')
-        requirements = v.get('snippet', {}).get('requirement', '')
-        vacancy_obj = Vacancy(name, url, salary, description, requirements)
-        vacancies.append(vacancy_obj)
-    return vacancies
 
 
 if __name__ == "__main__":

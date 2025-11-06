@@ -16,6 +16,7 @@ class VacanciesAPI(ABC):
 
 
 class HHVacanciesAPI(VacanciesAPI):
+    """Получение вакансий из API по поисковому запросу"""
     def __init__(self):
         self.__base_url = 'https://api.hh.ru/vacancies'
         self.__headers = {'User-Agent': 'MyVacancyApp'}
