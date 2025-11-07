@@ -15,7 +15,7 @@ def user_interaction():
 
     filter_words = input("Введите ключевые слова для фильтрации вакансий: ").split()
 
-    salary_range= input("Введите диапазон зарплат (например, 100000-150000 или оставить пустым): ")
+    salary_range = input("Введите диапазон зарплат (например, 100000-150000 или оставить пустым): ")
     salary_min, salary_max = None, None
     if salary_range.strip():
         try:
@@ -49,5 +49,6 @@ def user_interaction():
     top_vacancies = sorted(vacancies, key=lambda v: v._get_salary_value(), reverse=True)[:top_n]
     return top_vacancies
 
+
 if __name__ == "__main__":
-    user_interaction()
+    print(user_interaction())

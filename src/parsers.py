@@ -6,7 +6,7 @@ def parse_vacancies(vac_dict):
     vacancies = []
     for v in vac_dict:
         name = v.get('name', 'Без названия')
-        url =  v.get('url', '')
+        url = v.get('url', '')
         salary = v.get('salary')
         description = v.get('snippet', {}).get('responsibility', '')
         requirements = v.get('snippet', {}).get('requirement', '')

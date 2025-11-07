@@ -1,7 +1,3 @@
-from src.api_hh import HHVacanciesAPI
-from src.parsers import parse_vacancies
-
-
 class Vacancy:
     __slots__ = ['name', 'url', 'salary', 'description', 'requirements']
 
@@ -32,18 +28,6 @@ class Vacancy:
     def __eq__(self, other):
         return self._get_salary_value() == other._get_salary_value()
 
-    def parse_vacancies(vac_dicts):
-        vacancies = []
-        for v in vac_dicts:
-            name = v.get('name', 'Без названия')
-            url = v.get('url', '')
-            salary = v.get('salary')
-            description = v.get('snippet', {}).get('responsibility', '')
-            requirements = v.get('snippet', {}).get('requirement', '')
-            vacancy_obj = Vacancy(name, url, salary, description, requirements)
-            vacancies.append(vacancy_obj)
-        return vacancies
-
     # Приватный метод для получения числового значения зарплаты
     def _get_salary_value(self):
         if isinstance(self.salary, dict):
@@ -65,16 +49,3 @@ class Vacancy:
             raise ValueError("Неверный формат зарплаты.")
         else:
             self.salary = salary
-
-
-if __name__ == "__main__":
-    api = HHVacanciesAPI()
-    keyword = "python разработчик"
-    vacs_dicts = api.get_vacancies(keyword)
-    vacancies = parse_vacancies(vacs_dicts)
-    print(f"Найдено {len(vacancies)} вакансий по запросу '{keyword}':")
-    sorted_vacancies = sorted(vacancies, reverse=True, key=lambda v: v._get_salary_value())
-    for v in sorted_vacancies[:5]:
-        print(f"Вакансия: {v.name}")
-        print(f"Ссылка: {v.url}")
-        print(f"Зарплата: {v.salary}")
