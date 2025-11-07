@@ -1,9 +1,7 @@
 import json
 from abc import ABC, abstractmethod
 
-from src.api_hh import HHVacanciesAPI
 from src.vacancy import Vacancy
-from src.parsers import parse_vacancies
 
 
 class FileHandler(ABC):
@@ -21,6 +19,7 @@ class FileHandler(ABC):
 
 
 class JSONFileHandler(FileHandler):
+    """класс для сохранения информации о вакансиях в JSON-файл"""
     def __init__(self, filename='vacancies.json'):
         self.__filename = filename
         self._load()
@@ -68,32 +67,3 @@ class JSONFileHandler(FileHandler):
     def delete_data(self, criteria):
         self._data = list(filter(lambda v: not criteria(v), self._data))
         self._save()
-
-
-if __name__ == "__main__":
-    api = HHVacanciesAPI()
-    keyword = "python разработчик"
-    vacs_dicts = api.get_vacancies(keyword)
-    vacancies = parse_vacancies(vacs_dicts)
-    print(f"Найдено {len(vacancies)} вакансий по запросу '{keyword}':")
-    sorted_vacancies = sorted(vacancies, reverse=True, key=lambda v: v._get_salary_value())
-
-    # Инициализация обработчика файла
-    file_handler = JSONFileHandler()
-
-    print("Топ 5 вакансий и их сохранение в файл:")
-    for v in sorted_vacancies[:5]:
-        print(f"Вакансия: {v.name}")
-        print(f"Ссылка: {v.url}")
-        print(f"Зарплата: {v.salary}")
-        print(f"Описание: {v.description}")
-        # Создаем объект и сохраняем
-        vacancy_obj = Vacancy(
-            v.name, v.url, v.salary, v.description, v.requirements
-        )
-        file_handler.add_data(vacancy_obj)
-
-    # Получение всех вакансий из файла
-    print("\nВсе вакансии из файла:")
-    for v in file_handler.get_data():
-        print(v)

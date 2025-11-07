@@ -1,9 +1,10 @@
 from src.api_hh import HHVacanciesAPI
-from src.vacancy import Vacancy
 from src.parsers import parse_vacancies
+from src.vacancy import Vacancy
 
 
 def user_interaction():
+    """функция для взаимодействия с пользователем"""
     print("Добро пожаловать!")
 
     search_query = input("Введите поисковый запрос: ")
@@ -48,7 +49,3 @@ def user_interaction():
     # Сортировка по зарплате (по убыванию)
     top_vacancies = sorted(vacancies, key=lambda v: v._get_salary_value(), reverse=True)[:top_n]
     return top_vacancies
-
-
-if __name__ == "__main__":
-    print(user_interaction())

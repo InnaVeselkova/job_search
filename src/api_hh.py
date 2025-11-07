@@ -1,6 +1,7 @@
-import requests
-from abc import ABC, abstractmethod
 import time
+from abc import ABC, abstractmethod
+
+import requests
 
 
 class VacanciesAPI(ABC):
@@ -59,22 +60,3 @@ class HHVacanciesAPI(VacanciesAPI):
             params['page'] += 1
             time.sleep(1)
         return all_vacancies
-
-
-if __name__ == "__main__":
-    api = HHVacanciesAPI()
-    keyword = "python разработчик"
-    vacancies = api.get_vacancies(keyword)
-    vacancies_ = []
-    for v in vacancies:
-        if v.get('salary') is not None:
-            vacancies_.append(v)
-
-    print(f"Найдено {len(vacancies_)} вакансий с указанием зарплаты по запросу '{keyword}':")
-    for v in vacancies_[:5]:  # показываем первые 5
-        name = v.get('name')
-        url = v.get('alternate_url')
-        salary = v.get('salary')
-        print(f"Вакансия: {name}")
-        print(f"Ссылка: {url}")
-        print(f"Зарплата: {salary}")
