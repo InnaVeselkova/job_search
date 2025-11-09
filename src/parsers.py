@@ -1,8 +1,12 @@
+from typing import List, Dict
+
 from src.vacancy import Vacancy
 
 
-def parse_vacancies(vac_dict):
-    """Функция для преобразования списка вакансий в список объектов Vacancy"""
+def parse_vacancies(vac_dict: List[Dict[str, any]]) -> List['Vacancy']:
+    """
+    Функция для преобразования списка вакансий в список объектов Vacancy
+    """
     vacancies = []
     for v in vac_dict:
         name = v.get('name', 'Без названия')

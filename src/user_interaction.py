@@ -1,10 +1,13 @@
+from typing import List, Optional
 from src.api_hh import HHVacanciesAPI
 from src.parsers import parse_vacancies
 from src.vacancy import Vacancy
 
 
-def user_interaction():
-    """функция для взаимодействия с пользователем"""
+def user_interaction()-> List['Vacancy']:
+    """
+    функция для взаимодействия с пользователем
+    """
     print("Добро пожаловать!")
 
     search_query = input("Введите поисковый запрос: ")

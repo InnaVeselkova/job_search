@@ -1,36 +1,45 @@
 import time
 from abc import ABC, abstractmethod
+from typing import List, Dict, Any
 
 import requests
 
 
 class VacanciesAPI(ABC):
     @abstractmethod
-    def _connect(self):
+    def _connect(self) -> None:
         """Приватный метод проверки соединения с API."""
         pass
 
     @abstractmethod
-    def get_vacancies(self, keyword: str):
+    def get_vacancies(self, keyword: str) -> List[Dict[str, Any]]:
         """Получить список вакансий по ключевому слову."""
         pass
 
 
 class HHVacanciesAPI(VacanciesAPI):
     """Получение вакансий из API по поисковому запросу"""
-    def __init__(self):
-        self.__base_url = 'https://api.hh.ru/vacancies'
-        self.__headers = {'User-Agent': 'MyVacancyApp'}
+    def __init__(self) -> None:
+        self.__base_url: str = 'https://api.hh.ru/vacancies'
+        self.__headers: Dict[str, str] = {'User-Agent': 'MyVacancyApp'}
         self._connect()
 
     def _connect(self):
+        """
+        Проверка соединения с API hh.ru.
+        Выполняет GET-запрос к базовому URL и проверяет статус.
+        В случае успеха выводит сообщение, иначе выбрасывает исключение.
+        """
         response = requests.get(self.__base_url)
         if response.status_code == 200:
             print("Подключение успешно к hh.ru")
         else:
             raise ConnectionError(f"Ошибка подключения: {response.status_code}")
 
-    def get_vacancies(self, keyword: str):
+    def get_vacancies(self, keyword: str) -> List[Dict[str, Any]]:
+        """
+        Получает список вакансий по ключевому слову
+        """
         params = {
             'text': keyword,
             'per_page': 100,
